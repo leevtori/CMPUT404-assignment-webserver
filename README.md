@@ -23,3 +23,5 @@ examples thus some of the code is Copyright © 2001-2013 Python
 Software Foundation; All Rights Reserved under the PSF license (GPL
 compatible) http://docs.python.org/2/library/socketserver.html
 
+Ressources
+* https://emalsha.wordpress.com/2016/11/24/how-create-http-server-using-python-socket-part-ii/
