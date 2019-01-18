@@ -37,28 +37,41 @@ class MyWebServer(socketserver.BaseRequestHandler):
         myfile = string_list[1] #Second string is requesting page
         print("method is: " + method)
         print("file : " + myfile)
-
+        
         if (myfile == "/"):
             myfile = "index.html"
         if (myfile == "/deep" or myfile == "/deep/"):
             myfile = "deep/index.html"
 
-        file = open("./www/"+myfile, 'rb')
-        response = file.read()
-        file.close()
+        try: 
+            file = open("./www/"+myfile, 'rb')
+            print(file.name)
+            response = file.read()
+            file.close()
 
-        header = 'HTTP/1.1 200 OK\n\n'
-        if (myfile.endswith(".css")):
-            mimetype = 'text/css'
-        else:
-            mimetype = 'text/html'
-        header += 'Content-type: '+str(mimetype)+'<strong>\n\n</strong>'
+            header = 'HTTP/1.1 200 OK\n'
+            if (myfile.endswith(".css")):
+                mimetype = 'text/css'
+            else:
+                mimetype = 'text/html'
+            header += 'Content-Type: '+str(mimetype)+'\n\n'
+
+        except Exception as e:
+            header = "HTTP/1.1 404 Not Found\n\n"
+            response = '''<html>
+                          <body>
+                            <center>
+                             <h3>Error 404: File not found</h3>
+                             <p>Python HTTP Server</p>
+                            </center>
+                          </body>
+                        </html>
+            '''.encode('utf-8')
 
         final_response = header.encode('utf-8')
         final_response += response
-        print(final_response)
         self.request.sendall(final_response)
-        #self.request.sendall(bytearray("OK",'utf-8'))
+        self.request.close()
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8081
