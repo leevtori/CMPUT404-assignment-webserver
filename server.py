@@ -30,12 +30,38 @@ import socketserver
 class MyWebServer(socketserver.BaseRequestHandler):
     
     def handle(self):
-        self.data = self.request.recv(1024).strip()
-        print ("Got a request of: %s\n" % self.data)
-        self.request.sendall(bytearray("OK",'utf-8'))
+        self.data = self.request.recv(1024).decode('utf-8')
+        string_list = self.data.split(' ')     # Split request from spaces
+ 
+        method = string_list[0] # First string is a method
+        myfile = string_list[1] #Second string is requesting page
+        print("method is: " + method)
+        print("file : " + myfile)
+
+        if (myfile == "/"):
+            myfile = "index.html"
+        if (myfile == "/deep" or myfile == "/deep/"):
+            myfile = "deep/index.html"
+
+        file = open("./www/"+myfile, 'rb')
+        response = file.read()
+        file.close()
+
+        header = 'HTTP/1.1 200 OK\n\n'
+        if (myfile.endswith(".css")):
+            mimetype = 'text/css'
+        else:
+            mimetype = 'text/html'
+        header += 'Content-type: '+str(mimetype)+'<strong>\n\n</strong>'
+
+        final_response = header.encode('utf-8')
+        final_response += response
+        print(final_response)
+        self.request.sendall(final_response)
+        #self.request.sendall(bytearray("OK",'utf-8'))
 
 if __name__ == "__main__":
-    HOST, PORT = "localhost", 8080
+    HOST, PORT = "localhost", 8081
 
     socketserver.TCPServer.allow_reuse_address = True
     # Create the server, binding to localhost on port 8080
