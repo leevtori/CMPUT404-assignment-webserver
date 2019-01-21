@@ -1,5 +1,6 @@
 #  coding: utf-8 
 import socketserver
+import os
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -34,28 +35,61 @@ class MyWebServer(socketserver.BaseRequestHandler):
         string_list = self.data.split(' ')     # Split request from spaces
  
         method = string_list[0] # First string is a method
-        myfile = string_list[1] #Second string is requesting page
+        request_path = string_list[1] #Second string is requesting page
         print("method is: " + method)
-        print("file : " + myfile)
+        print("file : " + request_path)
         
-        if (myfile == "/"):
-            myfile = "index.html"
-        if (myfile == "/deep" or myfile == "/deep/"):
-            myfile = "deep/index.html"
+        file_path=""
+        er_301 = False
+
+        if (method != 'GET'):
+            header = "HTTP/1.1 405 Method not allowed\n\n"
+            response = '''<html>
+                          <body>
+                            <center>
+                             <h3>Error 405: Method not allowed</h3>
+                             <p>Python HTTP Server</p>
+                            </center>
+                          </body>
+                        </html>
+            '''.encode('utf-8')
+
+        if (request_path == "/"):
+            file_path = "index.html"
+        elif (request_path[-1] == '/'):
+            # we know it's a directory, to take the abs path
+            file_path = os.path.abspath(request_path)
+            file_path += "/index.html"
+        else:
+            file_path = os.path.abspath(request_path)
+            er_301 = True
+       # if (request_path == "/deep" or request_path == "/deep/"):
+        #    request_path = "deep/index.html"
 
         try: 
-            file = open("./www/"+myfile, 'rb')
-            print(file.name)
-            response = file.read()
-            file.close()
-
-            header = 'HTTP/1.1 200 OK\n'
-            if (myfile.endswith(".css")):
-                mimetype = 'text/css'
+            if (er_301):
+                header = "HTTP/1.1 301 Moved Permanently\n\n"
+                response = '''<html>
+                            <body>
+                                <center>
+                                <h3>Error 301: Permanently moved</h3>
+                                <p>Location : ''' + file_path + "/index.html" +'''</p>
+                                </center>
+                            </body>
+                            </html>
+                '''.encode('utf-8')
+                er_301 = False
             else:
-                mimetype = 'text/html'
-            header += 'Content-Type: '+str(mimetype)+'\n\n'
+                file = open("./www/"+request_path, 'rb')
+                response = file.read()
+                file.close()
 
+                header = 'HTTP/1.1 200 OK\n'
+                if (request_path.endswith(".css")):
+                    mimetype = 'text/css'
+                elif (request_path.endswith(".html")):
+                    mimetype = 'text/html'
+                header += 'Content-Type: '+str(mimetype)+'\n\n'
         except Exception as e:
             header = "HTTP/1.1 404 Not Found\n\n"
             response = '''<html>
@@ -74,9 +108,10 @@ class MyWebServer(socketserver.BaseRequestHandler):
         self.request.close()
 
 if __name__ == "__main__":
-    HOST, PORT = "localhost", 8081
+    HOST, PORT = "localhost", 8080
 
     socketserver.TCPServer.allow_reuse_address = True
+
     # Create the server, binding to localhost on port 8080
     server = socketserver.TCPServer((HOST, PORT), MyWebServer)
 
