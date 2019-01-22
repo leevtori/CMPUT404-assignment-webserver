@@ -37,34 +37,27 @@ class MyWebServer(socketserver.BaseRequestHandler):
  
         method = string_list[0] # First string is a method
         request_path = string_list[1] #Second string is requesting page
-        # print("method is: " + method)
-        # print("file : " + request_path)
+        print("method is: " + method)
+        print("file : " + request_path)
         
         file_path=""
         er_301 = False
+        er_405 = False
 
-        if (method != 'GET'):
-            header = "HTTP/1.1 405 Method not allowed\n\n"
-            response = '''<html>
-                          <body>
-                            <center>
-                             <h3>Error 405: Method not allowed</h3>
-                             <p>Python HTTP Server</p>
-                            </center>
-                          </body>
-                        </html>
-            '''.encode('utf-8')
-
-        if (request_path == "/"):
-            file_path = "/index.html"
-        elif (request_path[-1] == '/'):
-            file_path = os.path.abspath(request_path)
-            file_path += "/index.html"
-        else:
-            file_path = os.path.abspath(request_path)
-            path = Path("./www"+file_path)
-            if (path.is_dir()):
-                er_301 = True
+        if (method == 'GET'):
+            if (request_path == "/"):
+                file_path = "/index.html"
+            elif (request_path[-1] == '/'):
+                file_path = os.path.abspath(request_path)
+                file_path += "/index.html"
+            else:
+                file_path = os.path.abspath(request_path)
+                path = Path("./www"+file_path)
+                if (path.is_dir()):
+                    er_301 = True
+        else :
+            er_405 = True
+            
         try: 
             if (er_301 == True):
                 header = "HTTP/1.1 301 Moved Permanently\n\n"
@@ -80,6 +73,18 @@ class MyWebServer(socketserver.BaseRequestHandler):
     
                 response = response.encode('utf-8')
                 er_301 = False
+            elif(er_405 == True):
+                header = "HTTP/1.1 405 Method not allowed\n\n"
+                response = '''<html>
+                            <body>
+                                <center>
+                                <h3>Error 405: Method not allowed</h3>
+                                <p>Python HTTP Server</p>
+                                </center>
+                            </body>
+                            </html>
+                '''.encode('utf-8')
+                er_405 = False
             else:
                 file = open("./www"+file_path, 'rb')
                 response = file.read()
@@ -108,7 +113,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         self.request.close()
 
 if __name__ == "__main__":
-    HOST, PORT = "localhost", 8081
+    HOST, PORT = "localhost", 8080
 
     socketserver.TCPServer.allow_reuse_address = True
 
