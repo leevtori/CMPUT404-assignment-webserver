@@ -25,4 +25,7 @@ Software Foundation; All Rights Reserved under the PSF license (GPL
 compatible) http://docs.python.org/2/library/socketserver.html
 
 Ressources
-* https://emalsha.wordpress.com/2016/11/24/how-create-http-server-using-python-socket-part-ii/
+* https://emalsha.wordpress.com/2016/11/24/how-create-http-server-using-python-socket-part-ii/, accessed January 18, 2019
+
+Collaborators
+* stian3
