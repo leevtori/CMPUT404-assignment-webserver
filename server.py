@@ -28,6 +28,8 @@ from pathlib import Path
 
 # try: curl -v -X GET http://127.0.0.1:8080/
 
+# https://emalsha.wordpress.com/2016/11/24/how-create-http-server-using-python-socket-part-ii/
+# Followed this tutorial on how to set up a webserver and access the path and how to format the data it sends back.
 
 class MyWebServer(socketserver.BaseRequestHandler):
     
